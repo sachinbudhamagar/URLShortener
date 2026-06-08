@@ -24,3 +24,21 @@
     ```bash
     pip install -r requirements.txt
     ```
+
+4. **Apply database migrations**
+
+    ```bash
+    python manage.py makemigrations accounts
+    python manage.py makemigrations shortener
+
+    python manage.py migrate
+    ```
+
+5. **Run the development server**
+
+    ```bash
+    python manage.py runserver
+    ```
+    Open **http://127.0.0.1:8000** in your browser.
+
+---
