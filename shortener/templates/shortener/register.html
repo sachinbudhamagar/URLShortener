@@ -1,0 +1,17 @@
+{% extends "shortener/base.html" %}
+
+{% block title %}Sign Up{% endblock %}
+
+{% block content %}
+<h2class="card-title mb-4 text-center">Create your account</h2>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <div class="d-grid mt-3">
+        <button type="submit" class="btn btn-primary btn-lg">
+            Sign Up
+        </button>
+     </div>
+</form>
+<p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+{% endblock %}

@@ -1,0 +1,171 @@
+{% extends "shortener/base.html" %}
+{% block title %}My URLs — Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+  @media (max-width: 767px) { .desktop-table { display: none; } }
+  @media (min-width: 768px) { .mobile-cards  { display: none; } }
+
+  .url-row:hover { background: #929293; }
+  .short-url-link { font-weight: 600; color: var(--primary); text-decoration: none; }
+  .short-url-link:hover { text-decoration: underline; }
+  .url-card {
+    border: 1px solid #ff0000;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+    background: #a16b6b;
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+  <h1 class="h2 mb-0">My URLs</h1>
+  <a href="{% url 'create_url' %}" class="btn btn-primary">
+    New Short URL
+  </a>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted mb-1 small">Total URLs</p>
+      <p class="stat-number">{{ total_urls }}</p>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted mb-1 small">Total Clicks</p>
+      <p class="stat-number">{{ total_clicks }}</p>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted mb-1 small">Avg Clicks / URL</p>
+      <p class="stat-number">
+        {% if total_urls > 0 %}
+          {% widthratio total_clicks total_urls 1 %}
+        {% else %}
+          0
+        {% endif %}
+      </p>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted mb-1 small">
+        <a href="{% url 'analytics' %}" class="text-decoration-none">View Analytics →</a>
+      </p>
+      <p class="stat-number" style="font-size:1.5rem;">Stat</p>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm desktop-table stat-card">
+  <div class="table-responsive">
+    <table class="table table-hover mb-0">
+      <thead class="table-light">
+        <tr>
+          <th>Short URL</th>
+          <th>Original URL</th>
+          <th>Created</th>
+          <th>Clicks</th>
+          <th>Expires</th>
+          <th class="text-center">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for url in urls %}
+        <tr class="url-row">
+
+          <td style="white-space: nowrap;">
+            <a href="/{{ url.short_code }}" target="_blank" class="short-url-link">
+              {{ url.short_code }}
+            </a>
+            <button class="btn btn-sm btn-outline-secondary ms-1 py-0"
+                    onclick="copyUrl('{{ request.scheme }}://{{ request.get_host }}/{{ url.short_code }}', this)">
+              Copy
+            </button>
+          </td>
+
+          <td>
+            <span class="text-truncate d-inline-block" style="max-width:280px;"
+                  title="{{ url.original_url }}">
+              {{ url.original_url }}
+            </span>
+          </td>
+
+          <td>{{ url.created_at|date:"M j, Y" }}</td>
+
+          <td><span class="click-badge">{{ url.click_count }}</span></td>
+
+          <td>
+            {% if url.expiration_date %}
+              {% if url.is_expired %}
+                <span class="badge bg-danger">Expired</span>
+              {% else %}
+                <small class="text-muted">{{ url.expiration_date|date:"M j, Y" }}</small>
+              {% endif %}
+            {% else %}
+              <small class="text-muted">Never</small>
+            {% endif %}
+          </td>
+
+          <td class="text-center" style="white-space:nowrap;">
+            <a href="{% url 'url_detail_analytics' url.short_code %}"
+               class="btn btn-sm btn-outline-info me-1" title="Analytics">📈</a>
+            <a href="{% url 'edit_url' url.short_code %}"
+               class="btn btn-sm btn-outline-warning me-1" title="Edit">📝</a>
+            <a href="{% url 'delete_url' url.short_code %}"
+               class="btn btn-sm btn-outline-danger" title="Delete">🚮</a>
+          </td>
+
+        </tr>
+        {% empty %}
+        <tr>
+          <td colspan="6" class="text-center py-5 text-muted">
+            <p class="mb-3">You haven't created any URLs yet.</p>
+            <a href="{% url 'create_url' %}" class="btn btn-primary">
+              Create Your First Short URL
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% if urls.has_other_pages %}
+<nav class="mt-4" aria-label="URL list pages">
+  <ul class="pagination justify-content-center">
+
+    {% if urls.has_previous %}
+      <li class="page-item">
+        <a class="page-link" href="?page=1">« First</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ urls.previous_page_number }}">Previous</a>
+      </li>
+    {% endif %}
+
+    <li class="page-item active" aria-current="page">
+      <span class="page-link">
+        Page {{ urls.number }} of {{ urls.paginator.num_pages }}
+      </span>
+    </li>
+
+    {% if urls.has_next %}
+      <li class="page-item">
+        <a class="page-link" href="?page={{ urls.next_page_number }}">Next</a>
+      </li>
+      <li class="page-item">
+        <a class="page-link" href="?page={{ urls.paginator.num_pages }}">Last »</a>
+      </li>
+    {% endif %}
+
+  </ul>
+</nav>
+{% endif %}
+{% endblock %}

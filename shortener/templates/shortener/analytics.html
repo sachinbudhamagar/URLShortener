@@ -1,0 +1,118 @@
+{% extends "shortener/base.html" %}
+{% block title %}Analytics — URL Shortener{% endblock %}
+
+{% block content %}
+
+<h1 class="mb-4">Analytics Overview</h1>
+
+<div class="row g-3 mb-5">
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted small mb-1">Total URLs</p>
+      <p class="stat-number">{{ total_urls }}</p>
+    </div>
+  </div>
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted small mb-1">Total Clicks</p>
+      <p class="stat-number">{{ total_clicks }}</p>
+    </div>
+  </div>
+
+  <div class="col-6 col-md-3">
+    <div class="stat-card">
+      <p class="text-muted small mb-1">Avg Clicks / URL</p>
+      <p class="stat-number">
+        {% if total_urls > 0 %}
+          {% widthratio total_clicks total_urls 1 %}
+        {% else %}
+          0
+        {% endif %}
+      </p>
+    </div>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-5 stat-card">
+  <div class="card-body p-4">
+    <h5 class="card-title mb-3">Top 5 URLs by Clicks</h5>
+    <div class="table-responsive">
+      <table class="table table-hover mb-0 stat-card">
+        <thead class="table-light stat-card">
+          <tr>
+            <th>#</th>
+            <th>Short Code</th>
+            <th>Original URL</th>
+            <th>Clicks</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for url in top_urls %}
+          <tr>
+            <td>{{ forloop.counter }}</td>
+            <td>
+              <a href="/{{ url.short_code }}" target="_blank">{{ url.short_code }}</a>
+            </td>
+            <td class="text-truncate" style="max-width:300px;">
+              {{ url.original_url }}
+            </td>
+            <td><span class="click-badge">{{ url.click_count }}</span></td>
+            <td>
+              <a href="{% url 'url_detail_analytics' url.short_code %}"
+                 class="btn btn-sm btn-outline-info">Detail</a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="text-center text-muted py-4">
+              No URLs yet — <a href="{% url 'create_url' %}">create one</a>!
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="row g-3 mb-4 stat-card">
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <h5 class="card-title">Most Clicked URL</h5>
+        {% if most_clicked %}
+          <p class="mb-1">
+            <a href="/{{ most_clicked.short_code }}" target="_blank" class="fw-bold">
+              {{ most_clicked.short_code }}
+            </a>
+          </p>
+          <p class="text-muted small mb-1">{{ most_clicked.original_url|truncatechars:60 }}</p>
+          <span class="click-badge">{{ most_clicked.click_count }} clicks</span>
+        {% else %}
+          <p class="text-muted">No data yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-body p-4">
+        <h5 class="card-title">Least Clicked URL</h5>
+        {% if least_clicked %}
+          <p class="mb-1">
+            <a href="/{{ least_clicked.short_code }}" target="_blank" class="fw-bold">
+              {{ least_clicked.short_code }}
+            </a>
+          </p>
+          <p class="text-muted small mb-1">{{ least_clicked.original_url|truncatechars:60 }}</p>
+          <span class="click-badge">{{ least_clicked.click_count }} clicks</span>
+        {% else %}
+          <p class="text-muted">No data yet.</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+

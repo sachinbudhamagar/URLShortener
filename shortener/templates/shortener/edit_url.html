@@ -1,0 +1,38 @@
+{% extends "shortener/base.html" %}
+{% block title %}Edit URL — {{ url.short_code }}{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-4">
+  <div class="col-md-7">
+
+    <h2 class="mb-1">Edit Short URL</h2>
+    <p class="text-muted mb-4">
+      Short code: <strong>{{ url.short_code }}</strong>
+    </p>
+
+    <div class="card shadow-sm ">
+      <div class="card-body p-4">
+        <form method="POST" novalidate>
+          {% csrf_token %}
+
+          {{ form.as_p }}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-3">
+            <button type="submit" class="btn btn-primary">
+              Save Changes
+            </button>
+            <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">
+              Cancel
+            </a>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+</div>
+{% endblock %}

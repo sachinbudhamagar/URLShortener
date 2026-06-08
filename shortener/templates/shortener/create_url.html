@@ -1,0 +1,75 @@
+{% extends "shortener/base.html" %}
+{% block title %}Shorten URL — URL Shortener{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center mt-2 stat-card">
+  <div class="col-md-8 col-lg-7">
+
+    <h1 class="mb-4">Shorten a URL</h1>
+
+    {% if short_url %}
+    <div class="alert alert-success shadow-sm mb-4">
+      <h5 class="alert-heading mb-3">Your short URL is ready!</h5>
+      <div class="input-group">
+        <input type="text" class="form-control" id="shortUrlInput"
+               value="{{ short_url }}" readonly>
+        <button class="btn btn-success" onclick="copyShortUrl()">
+          Copy
+        </button>
+    {% endif %}
+
+    <div class="card shadow-sm">
+      <div class="card-body p-4">
+        <form method="POST" novalidate>
+          {% csrf_token %}
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="{{ form.original_url.id_for_label }}">
+              Long URL <span class="text-danger">*</span>
+            </label>
+            {{ form.original_url }}
+            {% if form.original_url.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.original_url.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          <div class="mb-4">
+            <label class="form-label fw-semibold" for="{{ form.custom_short_code.id_for_label }}">
+              Custom short code
+              <small class="text-muted fw-normal">(leave blank for default)</small>
+            </label>
+            {{ form.custom_short_code }}
+            <div class="form-text">
+              Examples: <code>my-link</code>, <code>promo2024</code>
+            </div>
+            <div id="availability-status" class="mt-1 small"></div>
+            {% if form.custom_short_code.errors %}
+              <div class="text-danger small mt-1">
+                {{ form.custom_short_code.errors|join:", " }}
+              </div>
+            {% endif %}
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <div class="d-grid">
+            <button type="submit" class="btn btn-primary btn-lg">
+              Shorten URL
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <div class="mt-3">
+      <a href="{% url 'dashboard' %}" class="btn btn-outline-secondary">Back to Dashboard</a>
+    </div>
+
+  </div>
+</div>
+{% endblock %}
+
