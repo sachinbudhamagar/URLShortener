@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth import login, logout
 from django.contrib.auth.decorators import login_required
-from django.http import HttpResponseForbidden, JsonResponse, HttpResponse
+from django.http import HttpResponseForbidden
 from django.core.paginator import Paginator
 from django.db.models import F, Sum, Count
 from django.utils import timezone
@@ -12,10 +12,7 @@ from .forms import UserRegisterForm, URLForm
 from .models import URL, Click
 from .utils import get_client_ip, generate_unique_code
 
-# Create your views here.
 
-
-# HOME:- Landing page
 def home(request):
     if request.method == "POST":
         form = URLForm(request.POST)
@@ -122,23 +119,15 @@ def edit_url(request, short_code):
     if url_obj.user != request.user:
         return HttpResponseForbidden("You don't have permission to edit this URL.")
 
-    if request.method == "POST":
-        form = URLForm(request.POST, instance=url_obj)
-        if form.is_valid():
-            form.save()
-            messages.success(request, "URL updated successfully!")
-            return redirect("dashboard")
-        else:
-            form = URLForm(instance=url_obj)
+    form = URLForm(request.POST or None, instance=url_obj)
+    if request.method == "POST" and form.is_valid():
+        form.save()
+        messages.success(request, "URL updated successfully!")
+        return redirect("dashboard")
 
-        return render(
-            request, "shortener/edit_url.html", {"form": form, "url": url_obj}
-        )
-    form = URLForm(instance=url_obj)
     return render(request, "shortener/edit_url.html", {"form": form, "url": url_obj})
 
 
-# DELETE URL
 @login_required
 def delete_url(request, short_code):
     url_obj = get_object_or_404(URL, short_code=short_code)
@@ -154,16 +143,6 @@ def delete_url(request, short_code):
 
 def redirect_url(request, short_code):
     url_obj = get_object_or_404(URL, short_code=short_code)
-
-    if url_obj.is_expired():
-        return render(
-            request,
-            "shortener/expired.html",
-            {
-                "url": url_obj,
-                "expired_at": url_obj.expiration_date,
-            },
-        )
 
     URL.objects.filter(pk=url_obj.pk).update(click_count=F("click_count") + 1)
 
@@ -193,13 +172,16 @@ def analytics(request):
     ).count()
 
     daily_clicks = []
-    for i in range(6, -1, -1):
-        day = timezone.now() - timedelta(days=i)
-        count = Click.objects.filter(
-            url__user=request.user,
-            clicked_at__date=day.date(),
-        ).count()
-        daily_clicks.append({"date": day.strftime("%b %d"), "count": count})
+
+    from django.db.models.functions import TruncDate
+
+    recent_clicks = (
+        Click.objects.filter(
+            url__user=request.user, clicked_at__gte=timezone.now() - timedelta(days=7)
+        )
+        .values(TruncDate("clicked_at"))
+        .annotate(count=Count("id"))
+    )
 
     top_urls = user_urls.order_by("-click_count")[:5]
     return render(
@@ -244,10 +226,3 @@ def url_detail_analytics(request, short_code):
             "top_referrers": top_referrers,
         },
     )
-
-
-def check_code_availability(request, code):
-    code_taken = URL.objects.filter(short_code=code).exists()
-
-    available = not code_taken
-    return JsonResponse({"available": available, "code": code})

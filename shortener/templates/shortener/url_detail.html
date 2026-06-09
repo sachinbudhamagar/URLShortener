@@ -36,12 +36,13 @@
 
 <div class="card shadow-sm mb-4 stat-card">
   <div class="card-body p-4">
-    <h5 class="card-title mb-3">Recent Clicks (last 20)</h5>
+    <h5 class="card-title mb-3">Recent Clicks</h5>
     <div class="table-responsive">
       <table class="table table-sm mb-0">
         <thead class="table-light">
           <tr>
             <th>Time</th>
+            <th>IP Address</th>
             <th>Referrer</th>
           </tr>
         </thead>
@@ -49,6 +50,7 @@
           {% for click in recent_clicks %}
           <tr>
             <td>{{ click.clicked_at|date:"M j, Y H:i" }}</td>
+            <td>{{ click.ip_address|default:"Unknown" }}</td>
             <td>{{ click.referrer|default:"Direct"|truncatechars:50 }}</td>
           </tr>
           {% empty %}

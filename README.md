@@ -2,7 +2,7 @@
 
     A URL shortener web application using Python with the Django framework.
 
-### Setup
+## Setup
 
 1. **Clone Repositroy**
 

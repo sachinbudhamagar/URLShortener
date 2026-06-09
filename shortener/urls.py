@@ -22,8 +22,5 @@ urlpatterns = [
         views.url_detail_analytics,
         name="url_detail_analytics",
     ),
-    path(
-        "api/check-code/<str:code>/", views.check_code_availability, name="check_code"
-    ),
     path("<str:short_code>/", views.redirect_url, name="redirect"),
 ]

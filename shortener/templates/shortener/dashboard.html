@@ -4,7 +4,6 @@
 {% block extra_css %}
 <style>
   @media (max-width: 767px) { .desktop-table { display: none; } }
-  @media (min-width: 768px) { .mobile-cards  { display: none; } }
 
   .url-row:hover { background: #929293; }
   .short-url-link { font-weight: 600; color: var(--primary); text-decoration: none; }
@@ -71,7 +70,6 @@
           <th>Original URL</th>
           <th>Created</th>
           <th>Clicks</th>
-          <th>Expires</th>
           <th class="text-center">Actions</th>
         </tr>
       </thead>
@@ -99,18 +97,6 @@
           <td>{{ url.created_at|date:"M j, Y" }}</td>
 
           <td><span class="click-badge">{{ url.click_count }}</span></td>
-
-          <td>
-            {% if url.expiration_date %}
-              {% if url.is_expired %}
-                <span class="badge bg-danger">Expired</span>
-              {% else %}
-                <small class="text-muted">{{ url.expiration_date|date:"M j, Y" }}</small>
-              {% endif %}
-            {% else %}
-              <small class="text-muted">Never</small>
-            {% endif %}
-          </td>
 
           <td class="text-center" style="white-space:nowrap;">
             <a href="{% url 'url_detail_analytics' url.short_code %}"
