@@ -1,7 +1,8 @@
 # URLShortener
 
     A URL shortener web application using Python with the Django framework.
-    Live: https://url-shortenerr-rho.vercel.app/
+    
+Public URL: https://url-shortenerr-rho.vercel.app/
 
 ## Setup
 
