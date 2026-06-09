@@ -121,7 +121,12 @@ def edit_url(request, short_code):
 
     form = URLForm(request.POST or None, instance=url_obj)
     if request.method == "POST" and form.is_valid():
-        form.save()
+        url_obj = form.save(commit=False)
+        custom_code = form.cleaned_data.get("custom_short_code")
+        if custom_code:
+            url_obj.short_code = custom_code
+            url_obj.custom_code = True
+        url_obj.save()
         messages.success(request, "URL updated successfully!")
         return redirect("dashboard")
 
@@ -173,15 +178,14 @@ def analytics(request):
 
     daily_clicks = []
 
-    from django.db.models.functions import TruncDate
-
-    recent_clicks = (
-        Click.objects.filter(
-            url__user=request.user, clicked_at__gte=timezone.now() - timedelta(days=7)
-        )
-        .values(TruncDate("clicked_at"))
-        .annotate(count=Count("id"))
-    )
+    for i in range(6, -1, -1):  # 6, 5, 4, 3, 2, 1, 0
+        day = timezone.now() - timedelta(days=i)
+        # __date is a Django lookup that extracts just the date portion.
+        count = Click.objects.filter(
+            url__user=request.user,
+            clicked_at__date=day.date(),
+        ).count()
+        daily_clicks.append({"date": day.strftime("%b %d"), "count": count})
 
     top_urls = user_urls.order_by("-click_count")[:5]
     return render(
