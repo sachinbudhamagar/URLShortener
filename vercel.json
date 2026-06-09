@@ -1,0 +1,7 @@
+{
+  "builds": [{"src": "url_shortener/wsgi.py", "use": "@vercel/python"}],
+  "routes": [{"src": "/(.*)", "dest": "url_shortener/wsgi.py"}],
+  "env": {
+    "DJANGO_SETTINGS_MODULE": "url_shortener.settings"
+  }
+}
